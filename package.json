@@ -1,0 +1,38 @@
+{
+  "name": "instagram-ai-automation",
+  "version": "1.0.0",
+  "description": "AI-powered Instagram carousel automation with OpenAI and Buffer",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js run",
+    "batch": "node src/index.js batch --count 5",
+    "web": "node src/index.js web --port 3000",
+    "api:dev": "node src/index.js web --port 3000",
+    "web:api": "npm run api:dev",
+    "dashboard:dev": "npm run dev --prefix dashboard",
+    "dashboard:install": "npm install --prefix dashboard",
+    "dev:all": "concurrently -k -n api,ui -c blue,magenta \"npm run api:dev\" \"npm run dashboard:dev\"",
+    "web:all": "npm run dev:all",
+    "lint": "node -e \"console.log('No linter configured')\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@google/genai": "^1.50.1",
+    "axios": "^1.15.2",
+    "commander": "^14.0.3",
+    "date-fns": "^4.1.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "form-data": "^4.0.5",
+    "jsonrepair": "^3.14.0",
+    "openai": "^6.34.0",
+    "playwright": "^1.59.1",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
