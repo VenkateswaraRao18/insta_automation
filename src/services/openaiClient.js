@@ -3,7 +3,7 @@ const { GoogleGenAI } = require("@google/genai");
 const { jsonrepair } = require("jsonrepair");
 
 function createAIClient() {
-  const provider = (process.env.AI_PROVIDER || "openai").toLowerCase();
+  const provider = resolveProvider();
   if (provider === "gemini") {
     return createGeminiClient();
   }
@@ -13,9 +13,20 @@ function createAIClient() {
   throw new Error(`Unsupported AI_PROVIDER "${provider}". Use "openai" or "gemini".`);
 }
 
+function resolveProvider() {
+  const explicit = String(process.env.AI_PROVIDER || "").trim().toLowerCase();
+  if (explicit) return explicit;
+  const hasGemini = Boolean(String(process.env.GEMINI_API_KEY || "").trim());
+  const hasOpenAI = Boolean(String(process.env.OPENAI_API_KEY || "").trim());
+  if (hasGemini && !hasOpenAI) return "gemini";
+  return "openai";
+}
+
 function createOpenAIClient() {
   if (!process.env.OPENAI_API_KEY) {
-    throw new Error("Missing OPENAI_API_KEY in environment.");
+    throw new Error(
+      "Missing OPENAI_API_KEY in environment. If you use Gemini, set AI_PROVIDER=gemini (or set GEMINI_API_KEY only and leave AI_PROVIDER unset)."
+    );
   }
   const model = process.env.OPENAI_MODEL || "gpt-4.1-mini";
   const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
