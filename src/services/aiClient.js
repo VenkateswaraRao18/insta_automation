@@ -1,47 +1,12 @@
-const OpenAI = require("openai");
 const { GoogleGenAI } = require("@google/genai");
 const { jsonrepair } = require("jsonrepair");
 
 function createAIClient() {
-  const provider = resolveProvider();
-  if (provider === "gemini") {
-    return createGeminiClient();
+  const provider = String(process.env.AI_PROVIDER || "gemini").toLowerCase();
+  if (provider !== "gemini") {
+    throw new Error('This project is configured for Gemini only. Set AI_PROVIDER=gemini.');
   }
-  if (provider === "openai") {
-    return createOpenAIClient();
-  }
-  throw new Error(`Unsupported AI_PROVIDER "${provider}". Use "openai" or "gemini".`);
-}
-
-function resolveProvider() {
-  const explicit = String(process.env.AI_PROVIDER || "").trim().toLowerCase();
-  if (explicit) return explicit;
-  const hasGemini = Boolean(String(process.env.GEMINI_API_KEY || "").trim());
-  const hasOpenAI = Boolean(String(process.env.OPENAI_API_KEY || "").trim());
-  if (hasGemini && !hasOpenAI) return "gemini";
-  return "openai";
-}
-
-function createOpenAIClient() {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error(
-      "Missing OPENAI_API_KEY in environment. If you use Gemini, set AI_PROVIDER=gemini (or set GEMINI_API_KEY only and leave AI_PROVIDER unset)."
-    );
-  }
-  const model = process.env.OPENAI_MODEL || "gpt-4.1-mini";
-  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-  return {
-    provider: "openai",
-    async generateJson(prompt) {
-      const response = await client.responses.create({
-        model,
-        input: prompt
-      });
-      const text = extractOpenAIText(response);
-      return parseModelJson(text);
-    }
-  };
+  return createGeminiClient();
 }
 
 function createGeminiClient() {
@@ -57,46 +22,27 @@ function createGeminiClient() {
       const retries = Number(process.env.GEMINI_MAX_RETRIES || 4);
       const backoffMs = Number(process.env.GEMINI_RETRY_BASE_MS || 1500);
 
-      try {
-        const response = await withRetry(
-          () =>
-            client.models.generateContent({
-              model,
-              contents: prompt,
-              config: {
-                responseMimeType: "application/json",
-                temperature: Number(process.env.GEMINI_TEMPERATURE ?? 0.55)
-              }
-            }),
-          {
-            retries,
-            backoffMs,
-            isRetryable: isGeminiRetryableError
-          }
-        );
-
-        const text = response.text || "";
-        return parseModelJson(text);
-      } catch (error) {
-        const allowFallback = String(process.env.AI_FALLBACK_TO_OPENAI || "true").toLowerCase() === "true";
-        if (allowFallback && process.env.OPENAI_API_KEY) {
-          const fallback = createOpenAIClient();
-          return fallback.generateJson(prompt);
+      const response = await withRetry(
+        () =>
+          client.models.generateContent({
+            model,
+            contents: prompt,
+            config: {
+              responseMimeType: "application/json",
+              temperature: Number(process.env.GEMINI_TEMPERATURE ?? 0.55)
+            }
+          }),
+        {
+          retries,
+          backoffMs,
+          isRetryable: isGeminiRetryableError
         }
-        throw error;
-      }
+      );
+
+      const text = response.text || "";
+      return parseModelJson(text);
     }
   };
-}
-
-function extractOpenAIText(response) {
-  if (response.output_text) return response.output_text;
-  const out = response.output || [];
-  const text = out
-    .flatMap((item) => item.content || [])
-    .find((content) => content.type === "output_text");
-  if (!text) throw new Error("OpenAI response did not include text output.");
-  return text.text;
 }
 
 function stripCodeFence(value) {
@@ -121,12 +67,10 @@ function parseModelJson(raw) {
   } catch (firstErr) {
     try {
       return JSON.parse(jsonrepair(text));
-    } catch (secondErr) {
+    } catch (_secondErr) {
       const pos = Number(String(firstErr.message).match(/position (\d+)/)?.[1]) || 0;
       const snippet = text.slice(Math.max(0, pos - 40), pos + 40);
-      throw new Error(
-        `Model returned invalid JSON (${firstErr.message}). Near: …${snippet}…`
-      );
+      throw new Error(`Model returned invalid JSON (${firstErr.message}). Near: ...${snippet}...`);
     }
   }
 }

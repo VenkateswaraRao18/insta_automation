@@ -1,7 +1,7 @@
 const fs = require("fs");
 const crypto = require("crypto");
 const { formatISO } = require("date-fns");
-const { createAIClient } = require("../services/openaiClient");
+const { createAIClient } = require("../services/aiClient");
 const { generateCarouselContent } = require("../agents/contentGenerator");
 const { evaluatePost } = require("../agents/evaluationAgent");
 const { generateCarouselImages } = require("../services/designGenerator");

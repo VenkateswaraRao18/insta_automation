@@ -22,14 +22,11 @@ const ContentSchema = z.object({
 });
 
 async function generateCarouselContent({ client, topic, config, feedback, attempt }) {
-  const providerHint =
-    (process.env.AI_PROVIDER || "openai").toLowerCase() === "gemini"
-      ? `
+  const providerHint = `
 Gemini-specific: Be dense and specific. Use real names (models, metrics, libraries) when relevant.
 Never reuse the same sentence in teach, example, takeaway, or codeSnippet within one slide object.
 codeSnippet must look like real syntax for the topic (Python, LaTeX-ish, or CLI), not generic placeholders.
-`
-      : "";
+`;
 
   const prompt = `
 You are a senior technical educator creating Instagram carousel JSON.
