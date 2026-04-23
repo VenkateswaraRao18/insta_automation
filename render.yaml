@@ -6,6 +6,7 @@ services:
     name: insta-automation-api
     env: node
     plan: free
-    buildCommand: npm install && npx playwright install --with-deps chromium
+    # --with-deps uses su/apt and fails on Render; browser binaries only is enough on their image.
+    buildCommand: npm install && npx playwright install chromium
     startCommand: npm run api:start
     healthCheckPath: /api/health

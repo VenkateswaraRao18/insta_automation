@@ -43,7 +43,11 @@ async function generateCarouselImages({ content, topic = "", outputDir, runId })
   const postDir = path.join(outputDir, runId);
   fs.mkdirSync(postDir, { recursive: true });
 
-  const browser = await chromium.launch({ headless: true });
+  const launchOpts = { headless: true };
+  if (process.platform === "linux") {
+    launchOpts.args = ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"];
+  }
+  const browser = await chromium.launch(launchOpts);
   const page = await browser.newPage({
     viewport: { width: 1080, height: 1080 }
   });
