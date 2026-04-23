@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
-const backend = process.env.API_PROXY_TARGET || "http://127.0.0.1:3000";
+const raw = process.env.API_PROXY_TARGET || "http://127.0.0.1:3000";
+// Trailing slash + destination = ...//api/... can break the upstream; Express may 404.
+const backend = String(raw).trim().replace(/\/+$/, "");
 
 const nextConfig = {
   async rewrites() {
