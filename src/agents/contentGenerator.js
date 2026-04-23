@@ -77,7 +77,9 @@ JSON shape:
 }
 `;
 
-  const raw = ContentSchema.parse(await client.generateJson(prompt));
+  const modelOutput = await client.generateJson(prompt);
+  const normalized = normalizeModelOutput(modelOutput);
+  const raw = ContentSchema.parse(normalized);
   const parsed = {
     ...raw,
     hook: buildHookString(raw),
@@ -93,6 +95,34 @@ function buildHookString(p) {
 
 function buildCtaString(p) {
   return `${p.ctaTitle.replace(/\s+/g, " ")}. ${p.ctaSubtitle.replace(/\s+/g, " ")}`;
+}
+
+function normalizeModelOutput(raw) {
+  const fallbackSlide = {
+    headline: "Key takeaway",
+    teach: "Explain one practical point clearly and directly.",
+    example: "Show a short realistic use case with a concrete detail.",
+    codeSnippet: "step_1 -> retrieve -> generate",
+    takeaway: "Keep context relevant to improve answer quality."
+  };
+
+  const safe = raw && typeof raw === "object" ? { ...raw } : {};
+  const slides = Array.isArray(safe.slides) ? [...safe.slides] : [];
+
+  while (slides.length < 4) {
+    const last = slides[slides.length - 1];
+    slides.push(last && typeof last === "object" ? { ...last } : { ...fallbackSlide });
+  }
+  safe.slides = slides.slice(0, 4);
+
+  const caption = String(safe.caption || "").trim();
+  if (!caption) {
+    safe.caption = "Save this carousel for later and share it with someone learning this topic.";
+  } else if (caption.length > 1000) {
+    safe.caption = caption.slice(0, 1000).trim();
+  }
+
+  return safe;
 }
 
 function validateContent(content) {
