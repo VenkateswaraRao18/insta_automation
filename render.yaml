@@ -1,0 +1,11 @@
+# Optional: connect this repo in Render → New Blueprint Instance, or create a Web Service manually with the same commands.
+# Set secrets (API keys, tokens) in the Render dashboard — do not commit them here.
+
+services:
+  - type: web
+    name: insta-automation-api
+    env: node
+    plan: free
+    buildCommand: npm install && npx playwright install --with-deps chromium
+    startCommand: npm run api:start
+    healthCheckPath: /api/health

@@ -3,8 +3,12 @@
   "version": "1.0.0",
   "description": "AI-powered Instagram carousel automation with OpenAI and Buffer",
   "main": "src/index.js",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "start": "node src/index.js run",
+    "api:start": "node src/index.js web",
     "batch": "node src/index.js batch --count 5",
     "web": "node src/index.js web --port 3000",
     "api:dev": "node src/index.js web --port 3000",

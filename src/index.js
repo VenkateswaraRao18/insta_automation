@@ -58,12 +58,13 @@ program
 
 program
   .command("web")
-  .option("--port <port>", "Web server port", "3000")
+  .option("--port <port>", "Web server port (Render/production: use env PORT instead)", "3000")
   .action((options) => {
     const config = readConfig();
+    const port = process.env.PORT ? Number(process.env.PORT) : Number(options.port);
     startWebServer({
       config,
-      port: Number(options.port)
+      port: Number.isFinite(port) && port > 0 ? port : 3000
     });
   });
 
