@@ -42,7 +42,7 @@ export default function DashboardPage() {
             </div>
           </div>
           <div className="flex items-center gap-3 text-xs text-zinc-500">
-            <span className="hidden sm:inline">API :3000</span>
+            <span className="hidden sm:inline">API via proxy</span>
             <Link
               href="/api/health"
               target="_blank"
@@ -59,10 +59,20 @@ export default function DashboardPage() {
         {loadErr && (
           <div className="mb-6 rounded-xl border border-red-500/30 bg-red-950/40 px-4 py-3 text-sm text-red-200">
             {loadErr}
-            <p className="mt-2 text-xs text-red-300/80">
-              Start the backend: <code className="rounded bg-black/30 px-1">npm run api:dev</code> then refresh (or{" "}
-              <code className="rounded bg-black/30 px-1">npm run dev:all</code> for backend + this UI).
-            </p>
+            <div className="mt-3 space-y-2 text-xs text-red-300/80">
+              <p>
+                <span className="font-medium text-red-200/90">Local:</span> run{" "}
+                <code className="rounded bg-black/30 px-1">npm run api:dev</code> (or{" "}
+                <code className="rounded bg-black/30 px-1">npm run dev:all</code>), then refresh.
+              </p>
+              <p>
+                <span className="font-medium text-red-200/90">Vercel / hosted:</span> in the project →{" "}
+                <strong className="text-red-200">Settings → Environment Variables</strong>, add{" "}
+                <code className="rounded bg-black/30 px-1">API_PROXY_TARGET</code> = your public API base URL (no path),
+                e.g. <code className="rounded bg-black/30 px-1">https://your-service.onrender.com</code>. Redeploy, then
+                refresh.
+              </p>
+            </div>
           </div>
         )}
 
