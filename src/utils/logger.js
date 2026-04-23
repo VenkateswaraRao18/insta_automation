@@ -1,4 +1,5 @@
 const fs = require("fs");
+const path = require("path");
 const { RUNS_LOG_PATH } = require("./paths");
 
 function createLogger(context = "pipeline") {
@@ -23,6 +24,7 @@ function writeLog(level, context, message, data) {
     message,
     ...data
   };
+  fs.mkdirSync(path.dirname(RUNS_LOG_PATH), { recursive: true });
   fs.appendFileSync(RUNS_LOG_PATH, `${JSON.stringify(payload)}\n`, "utf-8");
 }
 
