@@ -2,10 +2,7 @@ const { GoogleGenAI } = require("@google/genai");
 const { jsonrepair } = require("jsonrepair");
 
 function createAIClient() {
-  const provider = String(process.env.AI_PROVIDER || "gemini").toLowerCase();
-  if (provider !== "gemini") {
-    throw new Error('This project is configured for Gemini only. Set AI_PROVIDER=gemini.');
-  }
+  // Gemini-only runtime: ignore AI_PROVIDER to avoid unnecessary env errors.
   return createGeminiClient();
 }
 
